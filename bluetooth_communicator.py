@@ -24,7 +24,7 @@ def run_bluetooth_communication(shared_state, lock):
                 current_coords = shared_state.get('center_coordinates')
             
             if current_coords and current_coords != last_sent_coords:
-                message = f"{current_coords[0]} {current_coords[1]}".encode('ASCII')
+                message = f"{current_coords[0]} {current_coords[1]} \n".encode('ASCII')
                 ser.write(message)
                 print(f"[蓝牙线程] 已发送坐标: {message.decode().strip()}")
                 last_sent_coords = current_coords
