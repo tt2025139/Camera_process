@@ -1,9 +1,8 @@
 # video_processor.py
-
+import time
 import cv2
 import requests
 import numpy as np
-import time
 from config import VIDEO_STREAM_URL, MIN_CONTOUR_AREA
 
 def run_video_processing(shared_state, lock):

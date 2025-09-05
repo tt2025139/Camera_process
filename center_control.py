@@ -1,4 +1,4 @@
-# bluetooth_communicator.py
+# center_control.py
 
 import serial
 import time
