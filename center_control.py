@@ -31,7 +31,6 @@ def run_center_control(shared_state, lock):
             if abs(error_y) > CENTER_TOLERANCE:
                 move_y += 1 if error_y > 0 else -1
 
-            moving = (move_x, move_y)
 
             
             if (abs(center_coordinates[0] - LIGHT_CENTER[0]) <= CENTER_TOLERANCE and
@@ -66,15 +65,12 @@ def run_center_control(shared_state, lock):
             if move_y > SERVO_Y_MAX:
                     move_y = SERVO_Y_MIN
 
-            moving = (move_x, move_y)
             firing = False    
 
-                
+        move_x = clamp(move_x, SERVO_X_MIN, SERVO_X_MAX)
+        move_y = clamp(move_y, SERVO_Y_MIN, SERVO_Y_MAX)
+        moving = (move_x, move_y)
 
-        clamp(moving[0], SERVO_X_MIN, SERVO_X_MAX)
-        clamp(moving[1], SERVO_Y_MIN, SERVO_Y_MAX)
-
- 
         last_coordinates = center_coordinates
 
         with lock:
