@@ -19,15 +19,19 @@ def run_center_control(shared_state, lock):
             firing = shared_state.get('firing')
 
         if center_coordinates is not None:
+            
+            error_x = center_coordinates[0] - LIGHT_CENTER[0]
+            error_y = center_coordinates[1] - LIGHT_CENTER[1]
 
-            if center_coordinates[0] >= LIGHT_CENTER[0] + CENTER_TOLERANCE:
-                moving = (moving[0] + 1, moving[1])
-            if center_coordinates[0] <= LIGHT_CENTER[0] - CENTER_TOLERANCE:
-                moving = (moving[0] - 1, moving[1])
-            if center_coordinates[1] >= LIGHT_CENTER[1] + CENTER_TOLERANCE:
-                moving = (moving[0], moving[1] + 1)
-            if center_coordinates[1] <= LIGHT_CENTER[1] - CENTER_TOLERANCE:
-                moving = (moving[0], moving[1] - 1)
+            move_x, move_y = moving
+
+            
+            if abs(error_x) > CENTER_TOLERANCE:
+                move_x += 1 if error_x > 0 else -1
+            if abs(error_y) > CENTER_TOLERANCE:
+                move_y += 1 if error_y > 0 else -1
+
+            moving = (move_x, move_y)
 
             
             if (abs(center_coordinates[0] - LIGHT_CENTER[0]) <= CENTER_TOLERANCE and
@@ -37,43 +41,38 @@ def run_center_control(shared_state, lock):
                 firing = False
 
         else:
+            # 定义巡航方向
+            if 'scan_direction_x' not in shared_state:
+                shared_state['scan_direction_x'] = 1  # 1 表示向右, -1 表示向左
 
-            if last_coordinates[0] < FRAME_WIDTH // 2:
-                moving = (moving[0] - 1, moving[1])
-            elif last_coordinates[0] > FRAME_WIDTH // 2:
-                moving = (moving[0] + 1, moving[1])
-            elif last_coordinates[0] == FRAME_WIDTH // 2:
+            move_x, move_y = moving
 
-                if moving[0] == SERVO_X_MAX:
-                    moving = (SERVO_X_MIN, moving[1])
+            # 左右扫描
+            if shared_state['scan_direction_x'] == 1:
+                if move_x < SERVO_X_MAX:
+                    move_x += 1
                 else:
-                    moving = (moving[0] + 1, moving[1])
-                    
-
-            if last_coordinates[1] < FRAME_HEIGHT // 2:
-                moving = (moving[0], moving[1] - 1)
-            elif last_coordinates[1] > FRAME_HEIGHT // 2:
-                moving  = (moving[0], moving[1] + 1)
-            elif last_coordinates[1] == FRAME_HEIGHT // 2:
-
-                if moving[1] == SERVO_Y_MAX:
-                    moving = (moving[0], SERVO_Y_MIN)
+                    shared_state['scan_direction_x'] = -1
+                    move_y += 5  
+            else: 
+                if move_x > SERVO_X_MIN:
+                    move_x -= 1
                 else:
-                    moving = (moving[0], moving[1] + 1)
 
+                    shared_state['scan_direction_x'] = 1
+                    move_y += 5
+                        
+            # 如果 Y 轴到达边界，则复位
+            if move_y > SERVO_Y_MAX:
+                    move_y = SERVO_Y_MIN
 
+            moving = (move_x, move_y)
+            firing = False    
 
-            firing = False
                 
 
-        if moving[0] < SERVO_X_MIN:
-            moving = (SERVO_X_MIN, moving[1])
-        if moving[0] > SERVO_X_MAX:
-            moving = (SERVO_X_MAX, moving[1])
-        if moving[1] < SERVO_Y_MIN:
-            moving = (moving[0], SERVO_Y_MIN)
-        if moving[1] > SERVO_Y_MAX:
-            moving = (moving[0], SERVO_Y_MAX)
+        clamp(moving[0], SERVO_X_MIN, SERVO_X_MAX)
+        clamp(moving[1], SERVO_Y_MIN, SERVO_Y_MAX)
 
  
         last_coordinates = center_coordinates
@@ -85,3 +84,6 @@ def run_center_control(shared_state, lock):
         time.sleep(0.1)
 
     print("[中控线程] 正在关闭...")
+
+def clamp(value, min_value, max_value):
+    return max(min_value, min(value, max_value))

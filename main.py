@@ -12,6 +12,7 @@ if __name__ == "__main__":
         'center_coordinates': None,
         'firing': False,
         'moving': (0,0),
+        'scan_direction_x': 1,
         'running': True
     }
     lock = threading.Lock()
