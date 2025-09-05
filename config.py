@@ -9,9 +9,9 @@ BAUD_RATE = 115200      # 请确保与你的 HC-06 模块波特率一致
 
 # --- 图像处理配置 ---
 MIN_CONTOUR_AREA = 100  # 识别为目标的最小轮廓面积
-FRAME_WIDTH = 320       # 视频帧宽度
-FRAME_HEIGHT = 240      # 视频帧高度
-LIGHT_CENTER = (140, 150)  # 近似激光中心点
+FRAME_WIDTH = 240       # 视频帧宽度
+FRAME_HEIGHT = 320      # 视频帧高度
+LIGHT_CENTER = (90, 80)  # 近似激光中心点
 CENTER_TOLERANCE = 20   # 允许的中心误差范围（像素）
 
 

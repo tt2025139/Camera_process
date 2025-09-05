@@ -42,7 +42,8 @@ def run_video_processing(shared_state, lock):
                         if img is None:
                             continue
                         
-                        img = cv2.rotate(img, cv2.ROTATE_180)
+
+                        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
 
                         # RGB to HSV
