@@ -50,10 +50,10 @@ def run_video_processing(shared_state, lock):
                         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
                         # define Red
-                        lower_red1 = np.array([0, 100, 100])
-                        upper_red1 = np.array([80, 255, 255])
+                        lower_red1 = np.array([0, 150, 100])
+                        upper_red1 = np.array([20, 255, 255])
 
-                        lower_red2 = np.array([100, 100, 100])
+                        lower_red2 = np.array([160, 150, 100])
                         upper_red2 = np.array([180, 255, 255])
 
                         mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
@@ -77,6 +77,7 @@ def run_video_processing(shared_state, lock):
 
                                 M = cv2.moments(largest_contour)
                                 if M["m00"] != 0:
+
                                     cX = int(M["m10"] / M["m00"])
                                     cY = int(M["m01"] / M["m00"])
                                     
@@ -86,6 +87,8 @@ def run_video_processing(shared_state, lock):
 
                                     cv2.drawContours(img, [largest_contour], -1, (0, 255, 0), 2)
                                     cv2.circle(img, (cX, cY), 7, (255, 0, 0), -1)
+                                    cv2.putText(img, f"({cX}, {cY})", (cX + 10, cY - 10),
+                                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                         
                         if not found_object:
                             with lock:

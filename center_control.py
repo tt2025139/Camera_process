@@ -29,7 +29,7 @@ def run_center_control(shared_state, lock):
             if abs(error_x) > CENTER_TOLERANCE:
                 move_x += 1 if error_x > 0 else -1
             if abs(error_y) > CENTER_TOLERANCE:
-                move_y += 1 if error_y > 0 else -1
+                move_y += -1 if error_y > 0 else +1
 
 
             
