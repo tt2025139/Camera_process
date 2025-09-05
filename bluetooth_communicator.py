@@ -31,7 +31,7 @@ def run_bluetooth_communication(shared_state, lock):
             time.sleep(0.1)
 
         except serial.SerialException:
-            # 当串口断开或无法连接时，不会打印完整错误，只是安静地尝试重连
+            # 当串口断开或无法连接时，不会打印完整错误，只是尝试重连
             if ser and ser.is_open:
                 ser.close()
             ser = None

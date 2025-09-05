@@ -11,6 +11,7 @@ def run_center_control(shared_state, lock):
     print("[中控线程] 线程已启动。")
     last_moving = (0,0)
     last_firing = False
+    last_coordinates = (FRAME_WIDTH // 2, FRAME_HEIGHT // 2)
 
     while shared_state.get('running', True):
         with lock:
@@ -18,7 +19,7 @@ def run_center_control(shared_state, lock):
             moving = shared_state.get('moving')
             firing = shared_state.get('firing')
 
-        if center_coordinates[0] is not None and center_coordinates[1] is not None:
+        if center_coordinates is not None:
             if center_coordinates[0] >= LIGHT_CENTER[0] + CENTER_TOLERANCE:
                 moving = (moving[0] + 1, moving[1])
             if center_coordinates[0] <= LIGHT_CENTER[0] - CENTER_TOLERANCE:
@@ -27,14 +28,27 @@ def run_center_control(shared_state, lock):
                 moving = (moving[0], moving[1] + 1)
             if center_coordinates[1] <= LIGHT_CENTER[1] - CENTER_TOLERANCE:
                 moving = (moving[0], moving[1] - 1)
+
+            
             if (abs(center_coordinates[0] - LIGHT_CENTER[0]) <= CENTER_TOLERANCE and
                 abs(center_coordinates[1] - LIGHT_CENTER[1]) <= CENTER_TOLERANCE):
                 firing = True
             else:
-                firing = False            
+                firing = False
+
         else:
-            moving = (moving[0] + 1, moving[1] + 1)
+
+            if last_coordinates[0] < FRAME_WIDTH // 2:
+                moving = (last_moving[0] - 1, last_moving[1])
+            elif last_coordinates[0] > FRAME_WIDTH // 2:
+                moving = (last_moving[0] + 1, last_moving[1])
+            if last_coordinates[1] < FRAME_HEIGHT // 2:
+                moving = (moving[0], last_moving[1] - 1)
+            elif last_coordinates[1] > FRAME_HEIGHT // 2:
+                moving = (moving[0], last_moving[1] + 1)
+
             firing = False
+                
 
         if moving[0] < SERVO_X_MIN:
             moving = (SERVO_X_MIN, moving[1])
@@ -44,6 +58,14 @@ def run_center_control(shared_state, lock):
             moving = (moving[0], SERVO_Y_MIN)
         if moving[1] > SERVO_Y_MAX:
             moving = (moving[0], SERVO_Y_MAX)
+
+        last_moving = moving   
+        last_firing = firing
+        last_coordinates = center_coordinates
+
+        with lock:
+            shared_state['moving'] = moving
+            shared_state['firing'] = firing
 
         time.sleep(0.1)
 
