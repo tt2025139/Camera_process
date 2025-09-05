@@ -6,10 +6,9 @@ from config import SERIAL_PORT, BAUD_RATE
 
 def run_bluetooth_communication(shared_state, lock):
     """
-    在一个独立线程中运行，负责连接蓝牙串口，并周期性地发送更新后的坐标。
+    在一个独立线程中运行，负责连接蓝牙串口，并周期性地发送更新后的指令。
     """
     print("[蓝牙线程] 线程已启动。")
-    last_sent_coords = None
     ser = None
 
     while shared_state.get('running', True):
@@ -21,13 +20,13 @@ def run_bluetooth_communication(shared_state, lock):
                 time.sleep(2)
 
             with lock:
-                current_coords = shared_state.get('center_coordinates')
+                current_firing = shared_state.get('firing')
+                current_moving = shared_state.get('moving')
             
-            if current_coords and current_coords != last_sent_coords:
-                message = f"{current_coords[0]} {current_coords[1]} \n".encode('ASCII')
-                ser.write(message)
-                print(f"[蓝牙线程] 已发送坐标: {message.decode().strip()}")
-                last_sent_coords = current_coords
+            if current_moving != (0,0) or current_firing:
+                command = f"{current_moving[0]} {current_moving[1]} {int(current_firing)} \0"
+                ser.write(command.encode('ASCII'))
+                print(f"[蓝牙线程] 发送指令: {command.strip()}")
             
             time.sleep(0.1)
 

@@ -1,0 +1,17 @@
+# C/C++
+*.o
+*.a
+*.so
+*.obj
+
+# Java
+*.class
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Before
+
+before/
