@@ -5,9 +5,55 @@ import requests
 import numpy as np
 from config import VIDEO_STREAM_URL, MIN_CONTOUR_AREA
 
+class CONFIG:
+    """
+    通过更改此处的参数来控制脚本行为
+    """
+    # 选项1: 是否启用白平衡 (True/False)
+    # 如果图像整体色调偏色（例如偏绿、偏蓝），设置为 True 可以自动校正。
+    ENABLE_WHITE_BALANCE = True
+
+    # 选项2: 是否计算并打印 HSV 信息 (True/False)
+    # 设置为 True 会为每一帧计算并打印 HSV 的总和、最小值和最大值，用于调试。
+    CALCULATE_HSV_INFO = False
+
+    # 选项3: 颜色范围 (HSV)
+    # 在这里更改 lower 和 upper 的值来追踪不同颜色的物体。
+    LOWER_COLOR_BOUND_1 = np.array([55, 20, 50])  # Example: Brown for a box 示例 (红色低位): np.array([0, 100, 100])
+    UPPER_COLOR_BOUND_1= np.array([75, 160, 180]) # Example: Brown for a box 示例 (红色低位): np.array([20, 255, 255])
+
+    LOWER_COLOR_BOUND_2 = None  # 示例 (红色高位): np.array([160, 100, 100])
+    UPPER_COLOR_BOUND_2 = None  # 示例 (红色高位): np.array([180, 255, 255])
+
+
+def apply_white_balance(img):
+    """
+    应用“灰色世界”假设的白平衡算法来校正图像色偏。
+    """
+    img_float = img.astype(np.float32)
+    avg_b = np.mean(img_float[:, :, 0])
+    avg_g = np.mean(img_float[:, :, 1])
+    avg_r = np.mean(img_float[:, :, 2])
+    
+    # 防止除以零
+    if avg_b == 0 or avg_g == 0 or avg_r == 0:
+        return img
+        
+    avg_gray = (avg_b + avg_g + avg_r) / 3
+    scale_b = avg_gray / avg_b
+    scale_g = avg_gray / avg_g
+    scale_r = avg_gray / avg_r
+
+    img_float[:, :, 0] *= scale_b
+    img_float[:, :, 1] *= scale_g
+    img_float[:, :, 2] *= scale_r
+    
+    return np.clip(img_float, 0, 255).astype(np.uint8)
+
+
 def run_video_processing(shared_state, lock):
     """
-    在一个独立线程中运行，负责连接视频流，检测红色物体，并更新共享的坐标。
+    在一个独立线程中运行，负责连接视频流，检测指定颜色物体，并更新共享的坐标。
     """
     print("[视频线程] 正在连接视频流...")
     try:
@@ -42,75 +88,47 @@ def run_video_processing(shared_state, lock):
                         if img is None:
                             continue
                         
-
                         img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
+                        # --- [条件应用] 白平衡 ---
+                        if CONFIG.ENABLE_WHITE_BALANCE:
+                            img = apply_white_balance(img)
 
                         # RGB to HSV
                         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-                        # ADD THE FOLLOWING CODE BLOCK ###################################
-                        # Calculate the sum of all pixels for each channel (H, S, V)
-                        hsv_sum = np.sum(hsv, axis=(0, 1))
-
-                        # Find the minimum and maximum values for each channel
-                        h_min, s_min, v_min = np.min(hsv, axis=(0, 1))
-                        h_max, s_max, v_max = np.max(hsv, axis=(0, 1))
-
-                        # For demonstration, print the results to the console
-                        # You can use these variables as needed
-                        print(f"HSV Sums: H={hsv_sum[0]}, S={hsv_sum[1]}, V={hsv_sum[2]}")
-                        print(f"HSV Minima: H={h_min}, S={s_min}, V={v_min}")
-                        print(f"HSV Maxima: H={h_max}, S={s_max}, V={v_max}")
-                        ####################################################################
-
-                        # # define Red
-                        # lower_red1 = np.array([0, 100, 100])
-                        # upper_red1 = np.array([20, 255, 255])
-
-                        # lower_red2 = np.array([160, 100, 100])
-                        # upper_red2 = np.array([180, 255, 255])
-                    
-
-                        # mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-                        # mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-                        # red_mask = cv2.bitwise_or(mask1, mask2)
+                        # --- [条件计算] HSV 相关信息 ---
+                        if CONFIG.CALCULATE_HSV_INFO:
+                            hsv_sum = np.sum(hsv, axis=(0, 1))
+                            h_min, s_min, v_min = np.min(hsv, axis=(0, 1))
+                            h_max, s_max, v_max = np.max(hsv, axis=(0, 1))
+                            print(f"HSV Sums: H={hsv_sum[0]}, S={hsv_sum[1]}, V={hsv_sum[2]}")
+                            print(f"HSV Minima: H={h_min}, S={s_min}, V={v_min}")
+                            print(f"HSV Maxima: H={h_max}, S={s_max}, V={v_max}")
                         
-                        # # morphologyEx
-                        # kernel = np.ones((5, 5), np.uint8)
-                        
-                        # red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+                        # --- 使用宏定义的颜色范围进行物体检测 ---
+                        color_mask1 = cv2.inRange(hsv, CONFIG.LOWER_COLOR_BOUND_1, CONFIG.UPPER_COLOR_BOUND_1)
 
-                        # red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
-                        
-                        # contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-                        # define Box
-
-                        lower_brown_loose = np.array([55, 20, 50])
-                        upper_brown_loose = np.array([75, 160,180])
-                    
-                        box_mask = cv2.inRange(hsv, lower_brown_loose, upper_brown_loose)
-
+                        if CONFIG.LOWER_COLOR_BOUND_2 is not None and CONFIG.UPPER_COLOR_BOUND_2 is not None:
+                            color_mask2 = cv2.inRange(hsv, CONFIG.LOWER_COLOR_BOUND_2, CONFIG.UPPER_COLOR_BOUND_2)
+                            color_mask = cv2.bitwise_or(color_mask1, color_mask2)
+                        else:
+                            color_mask = color_mask1
                         
                         # morphologyEx
                         kernel = np.ones((5, 5), np.uint8)
+                        color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
+                        color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
                         
-                        box_mask = cv2.morphologyEx(box_mask, cv2.MORPH_OPEN, kernel)
-
-                        box_mask = cv2.morphologyEx(box_mask, cv2.MORPH_CLOSE, kernel)
-                        
-                        contours, _ = cv2.findContours(box_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                         
                         found_object = False
                         if contours:
                             largest_contour = max(contours, key=cv2.contourArea)
 
                             if cv2.contourArea(largest_contour) > MIN_CONTOUR_AREA:
-
                                 M = cv2.moments(largest_contour)
                                 if M["m00"] != 0:
-
                                     cX = int(M["m10"] / M["m00"])
                                     cY = int(M["m01"] / M["m00"])
                                     
@@ -128,7 +146,7 @@ def run_video_processing(shared_state, lock):
                                 shared_state['center_coordinates'] = None
 
                         cv2.imshow('Video Feed', img)
-                        cv2.imshow('Red Mask', box_mask)
+                        cv2.imshow('Color Mask', color_mask)
                         
                         if cv2.waitKey(1) == 27:
                             with lock:
