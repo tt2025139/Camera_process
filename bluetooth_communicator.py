@@ -30,6 +30,7 @@ def run_bluetooth_communication(shared_state, lock):
             with lock:
                 current_firing = shared_state.get('firing')
                 current_moving = shared_state.get('moving')
+                # current_random_move = shared_state.get('random_move')
             
             # 1. 仅在状态改变时才准备发送
             if current_moving != last_moving or current_firing != last_firing:
@@ -43,6 +44,13 @@ def run_bluetooth_communication(shared_state, lock):
                     ser.write(data_packet)
                     print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
+                    # data_packet = struct.pack('<BBHHBB', 
+                    #                          0xF0, 0x00,
+                    #                          current_moving[0], current_moving[1],
+                    #                          int(current_firing),int(current_random_move))
+                    # ser.write(data_packet)
+                    # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
+
                     # 更新状态
                     last_moving = current_moving
                     last_firing = current_firing
@@ -51,7 +59,7 @@ def run_bluetooth_communication(shared_state, lock):
                     print(f"[蓝牙线程] 警告：蓝牙输出缓冲区拥堵 ({ser.out_waiting}字节)，跳过本次发送。")
 
             # 无论是否发送，都保持固定的循环频率
-            time.sleep(0.1)
+            time.sleep(0.5)
 
         except serial.SerialException:
             if ser and ser.is_open:
@@ -60,7 +68,7 @@ def run_bluetooth_communication(shared_state, lock):
             print("[蓝牙线程] 串口连接丢失，将在5秒后重试...")
             for _ in range(50): 
                 if not shared_state.get('running', True): break
-                time.sleep(0.1)
+                time.sleep(0.2)
         except Exception as e:
             print(f"[蓝牙线程] 发生未知错误: {e}")
             time.sleep(5)

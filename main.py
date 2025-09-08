@@ -13,7 +13,8 @@ if __name__ == "__main__":
         'firing': False,
         'moving': (0,0),
         'scan_direction_x': 1,
-        'running': True
+        'running': True,
+        'random_move': False
     }
     lock = threading.Lock()
 

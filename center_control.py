@@ -12,11 +12,14 @@ def run_center_control(shared_state, lock):
 
     last_coordinates = (FRAME_WIDTH // 2, FRAME_HEIGHT // 2)
 
+    hascanned = False
+
     while shared_state.get('running', True):
         with lock:
             center_coordinates = shared_state.get('center_coordinates')
             moving = shared_state.get('moving')
             firing = shared_state.get('firing')
+            random_move = shared_state.get('random_move', False)
 
         if center_coordinates is not None:
             
@@ -40,30 +43,39 @@ def run_center_control(shared_state, lock):
                 firing = False
 
         else:
+
+            if hascanned == True:
+                # 已扫描过，则开始巡航
+                time.sleep(3)  # 停顿3秒
+                random_move = False
+                hascanned = False
+            else:
             # 定义巡航方向
-            if 'scan_direction_x' not in shared_state:
-                shared_state['scan_direction_x'] = 1  # 1 表示向右, -1 表示向左
+                if 'scan_direction_x' not in shared_state:
+                    shared_state['scan_direction_x'] = 1  # 1 表示向右, -1 表示向左
 
-            move_x, move_y = moving
+                move_x, move_y = moving
 
-            # 左右扫描
-            if shared_state['scan_direction_x'] == 1:
-                if move_x < SERVO_X_MAX:
-                    move_x += 1
-                else:
-                    shared_state['scan_direction_x'] = -1
-                    move_y += 5  
-            else: 
-                if move_x > SERVO_X_MIN:
-                    move_x -= 1
-                else:
+                # 左右扫描
+                if shared_state['scan_direction_x'] == 1:
+                    if move_x < SERVO_X_MAX:
+                        move_x += 15
+                    else:
+                        shared_state['scan_direction_x'] = -1
+                        move_y += 20  
+                else: 
+                    if move_x > SERVO_X_MIN:
+                        move_x -= 15
+                    else:
 
-                    shared_state['scan_direction_x'] = 1
-                    move_y += 5
-                        
-            # 如果 Y 轴到达边界，则复位
-            if move_y > SERVO_Y_MAX:
+                        shared_state['scan_direction_x'] = 1
+                        move_y += 20
+                            
+                # 如果 Y 轴到达边界，则复位
+                if move_y > SERVO_Y_MAX:
                     move_y = SERVO_Y_MIN
+                    random_move = True
+                    hascanned = True
 
             firing = False    
 
@@ -76,6 +88,7 @@ def run_center_control(shared_state, lock):
         with lock:
             shared_state['moving'] = moving
             shared_state['firing'] = firing
+            shared_state['random_move'] = random_move
 
         time.sleep(0.1)
 
