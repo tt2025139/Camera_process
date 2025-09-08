@@ -49,25 +49,58 @@ def run_video_processing(shared_state, lock):
                         # RGB to HSV
                         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-                        # define Red
-                        lower_red1 = np.array([0, 100, 100])
-                        upper_red1 = np.array([20, 255, 255])
+                        # ADD THE FOLLOWING CODE BLOCK ###################################
+                        # Calculate the sum of all pixels for each channel (H, S, V)
+                        hsv_sum = np.sum(hsv, axis=(0, 1))
 
-                        lower_red2 = np.array([160, 100, 100])
-                        upper_red2 = np.array([180, 255, 255])
+                        # Find the minimum and maximum values for each channel
+                        h_min, s_min, v_min = np.min(hsv, axis=(0, 1))
+                        h_max, s_max, v_max = np.max(hsv, axis=(0, 1))
 
-                        mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-                        mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
-                        red_mask = cv2.bitwise_or(mask1, mask2)
+                        # For demonstration, print the results to the console
+                        # You can use these variables as needed
+                        print(f"HSV Sums: H={hsv_sum[0]}, S={hsv_sum[1]}, V={hsv_sum[2]}")
+                        print(f"HSV Minima: H={h_min}, S={s_min}, V={v_min}")
+                        print(f"HSV Maxima: H={h_max}, S={s_max}, V={v_max}")
+                        ####################################################################
+
+                        # # define Red
+                        # lower_red1 = np.array([0, 100, 100])
+                        # upper_red1 = np.array([20, 255, 255])
+
+                        # lower_red2 = np.array([160, 100, 100])
+                        # upper_red2 = np.array([180, 255, 255])
+                    
+
+                        # mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+                        # mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+                        # red_mask = cv2.bitwise_or(mask1, mask2)
+                        
+                        # # morphologyEx
+                        # kernel = np.ones((5, 5), np.uint8)
+                        
+                        # red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+
+                        # red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
+                        
+                        # contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                        # define Box
+
+                        lower_brown_loose = np.array([55, 20, 50])
+                        upper_brown_loose = np.array([75, 160,180])
+                    
+                        box_mask = cv2.inRange(hsv, lower_brown_loose, upper_brown_loose)
+
                         
                         # morphologyEx
                         kernel = np.ones((5, 5), np.uint8)
                         
-                        red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+                        box_mask = cv2.morphologyEx(box_mask, cv2.MORPH_OPEN, kernel)
 
-                        red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
+                        box_mask = cv2.morphologyEx(box_mask, cv2.MORPH_CLOSE, kernel)
                         
-                        contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                        contours, _ = cv2.findContours(box_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                         
                         found_object = False
                         if contours:
@@ -95,7 +128,7 @@ def run_video_processing(shared_state, lock):
                                 shared_state['center_coordinates'] = None
 
                         cv2.imshow('Video Feed', img)
-                        cv2.imshow('Red Mask', red_mask)
+                        cv2.imshow('Red Mask', box_mask)
                         
                         if cv2.waitKey(1) == 27:
                             with lock:

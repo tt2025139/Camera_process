@@ -33,16 +33,15 @@ def run_bluetooth_communication(shared_state, lock):
                 # current_random_move = shared_state.get('random_move')
             
             # 1. 仅在状态改变时才准备发送
-            if current_moving != last_moving or current_firing != last_firing:
                 
                 # 2. 在发送前，检查输出缓冲区是否拥堵
-                if ser.out_waiting < BUFFER_THRESHOLD:
-                    data_packet = struct.pack('<BBHHB', 
-                                             0xF0, 0x00,
-                                             current_moving[0], current_moving[1],
-                                             int(current_firing))
-                    ser.write(data_packet)
-                    print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
+            if ser.out_waiting < BUFFER_THRESHOLD:
+                    # data_packet = struct.pack('<BBHHB', 
+                    #                          0xF0, 0x00,
+                    #                          current_moving[0], current_moving[1],
+                    #                          int(current_firing))
+                    # ser.write(data_packet)
+                    # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
                     # data_packet = struct.pack('<BBHHBB', 
                     #                          0xF0, 0x00,
@@ -54,12 +53,12 @@ def run_bluetooth_communication(shared_state, lock):
                     # 更新状态
                     last_moving = current_moving
                     last_firing = current_firing
-                else:
+            else:
 
                     print(f"[蓝牙线程] 警告：蓝牙输出缓冲区拥堵 ({ser.out_waiting}字节)，跳过本次发送。")
 
             # 无论是否发送，都保持固定的循环频率
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         except serial.SerialException:
             if ser and ser.is_open:
