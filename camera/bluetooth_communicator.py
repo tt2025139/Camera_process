@@ -7,8 +7,7 @@ from config import SERIAL_PORT, BAUD_RATE
 
 # 定义一个缓冲区阈值，当待发送字节超过这个数时，我们就暂停写入
 # 这个值可以根据实际情况调整，例如设置为数据包长度的几倍
-BUFFER_THRESHOLD = 21  # 7字节/包 * 3
-
+BUFFER_THRESHOLD = 24
 
 def run_bluetooth_communication(shared_state, lock):
     """

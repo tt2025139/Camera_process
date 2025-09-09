@@ -55,7 +55,7 @@ def run_center_control(shared_state, lock):
             ):
                 firing = True
             else:
-                firing = True
+                firing = False
 
         else:
 
@@ -74,17 +74,17 @@ def run_center_control(shared_state, lock):
                 # 左右扫描
                 if shared_state["scan_direction_x"] == 1:
                     if move_x < SERVO_X_MAX:
-                        move_x += 3
+                        move_x += 5
                     else:
                         shared_state["scan_direction_x"] = -1
-                        move_y += 20
+                        move_y += 30
                 else:
                     if move_x > SERVO_X_MIN:
-                        move_x -= 3
+                        move_x -= 5
                     else:
 
                         shared_state["scan_direction_x"] = 1
-                        move_y += 20
+                        move_y += 30
 
                 # 如果 Y 轴到达边界，则复位
                 if move_y > SERVO_Y_MAX:

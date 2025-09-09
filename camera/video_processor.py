@@ -12,22 +12,27 @@ class CONFIG:
     # ... 原有选项保持不变 ...
     ENABLE_WHITE_BALANCE = False
     CALCULATE_HSV_INFO = False
-    ENHANCE_CONTRAST = True
-    SHAPE_ANALYSIS_ENABLED = True
+    ENHANCE_CONTRAST = False
+    SHAPE_ANALYSIS_ENABLED = False
     MIN_ASPECT_RATIO = 0.3
     MAX_ASPECT_RATIO = 3.0
 
     # True:  使用下面的 H_MIN/MAX, S_MIN/MAX, 并动态计算V通道的阈值。 (推荐)
     # False: 使用下面传统的 LOWER/UPPER_COLOR_BOUND_1 固定阈值。
     ADAPTIVE_V_CHANNEL = True
-    V_TOLERANCE = 50  # V通道动态阈值的容差范围
+    V_TOLERANCE = 60  # V通道动态阈值的容差范围
 
 
     # --- 传统固定阈值 (当 ADAPTIVE_V_CHANNEL = False 时生效) ---
-    LOWER_COLOR_BOUND_1 = np.array([40, 50, 10])
-    UPPER_COLOR_BOUND_1 = np.array([70, 150, 70])
-    LOWER_COLOR_BOUND_2 = None
-    UPPER_COLOR_BOUND_2 = None
+    LOWER_COLOR_BOUND_1 = np.array([40, 70, 10])
+    UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
+    LOWER_COLOR_BOUND_2 = None  
+    UPPER_COLOR_BOUND_2 = None  
+    # LOWER_COLOR_BOUND_1 = np.array([0, 100, 100])
+    # UPPER_COLOR_BOUND_1 = np.array([20, 255, 255])
+    # LOWER_COLOR_BOUND_2 = np.array([160, 100, 100])  # 可选第二个范围
+    # UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
+
 
 # ... apply_white_balance 函数保持不变 ...
 def apply_white_balance(img):
@@ -102,14 +107,12 @@ def run_video_processing(shared_state, lock):
     print("[视频线程] 视频流连接成功。")
     bytes_data = b''
 
-    # --- [新增代码 1/4] ---
+
     # 创建一个字典来存储鼠标的当前位置和对应点的HSV值
-    # 使用字典或列表这样的可变对象，方便在回调函数中修改它
     mouse_data = {'hsv': None}
 
-    # --- [新增代码 2/4] ---
+
     # 定义鼠标回调函数
-    # 这个函数将在鼠标事件发生时被OpenCV调用
     def get_hsv_on_mouse_move(event, x, y, flags, param):
         # param 参数在这里就是每一帧的 hsv 图像
         # 当鼠标在窗口上移动时 (EVENT_MOUSEMOVE)
@@ -117,16 +120,11 @@ def run_video_processing(shared_state, lock):
             # 从 hsv 图像中获取 (y, x) 坐标的像素值
             # 注意OpenCV的坐标是 (y, x) 而不是 (x, y)
             hsv_pixel = param[y, x]
-            # 将获取到的HSV值存入 mouse_data 字典
             mouse_data['hsv'] = tuple(hsv_pixel)
 
-    # 创建窗口，为后续绑定回调函数做准备
+
     cv2.namedWindow('Video Feed')
     
-    # --- [新增代码 3/4] ---
-    # 将我们定义的回调函数绑定到 'Video Feed' 窗口上
-    # 'param' 参数我们将在主循环中动态传入最新的 hsv 帧
-    # 这里先设置为 None
     cv2.setMouseCallback('Video Feed', get_hsv_on_mouse_move, param=None)
 
 
@@ -177,7 +175,7 @@ def run_video_processing(shared_state, lock):
                         # --- 使用宏定义的颜色范围进行物体检测 ---
                         if CONFIG.ADAPTIVE_V_CHANNEL:
                             # 1. 对 BOUND_1 进行HS初筛 (更清晰的写法)
-                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 0])
+                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 120])
                             upper_hs1 = np.array([CONFIG.UPPER_COLOR_BOUND_1[0], CONFIG.UPPER_COLOR_BOUND_1[1], 255])
                             hs_mask1 = cv2.inRange(hsv, lower_hs1, upper_hs1)
                             
@@ -185,7 +183,7 @@ def run_video_processing(shared_state, lock):
                             
                             # (如果存在) 对 BOUND_2 进行HS初筛并合并
                             if CONFIG.LOWER_COLOR_BOUND_2 is not None and CONFIG.UPPER_COLOR_BOUND_2 is not None:
-                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 0])
+                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 120])
                                 upper_hs2 = np.array([CONFIG.UPPER_COLOR_BOUND_2[0], CONFIG.UPPER_COLOR_BOUND_2[1], 255])
                                 hs_mask2 = cv2.inRange(hsv, lower_hs2, upper_hs2)
                                 combined_hs_mask = cv2.bitwise_or(hs_mask1, hs_mask2)
