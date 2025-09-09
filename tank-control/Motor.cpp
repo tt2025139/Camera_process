@@ -150,26 +150,53 @@ void Forward(word speed) {                     // 后续可引入PID？
   setAction(2);
 }
 
-void Forward1(word speed) {
-  setMotorSpeed(SERVO_ID3, speed+1024+Compesate);
-  setMotorSpeed(SERVO_ID4, speed);
+
+ // 3.4朝5走
+void Forward_1(word speed) {
+  setMotorSpeed(SERVO_ID3, speed);
+  setMotorSpeed(SERVO_ID4, speed+1024);
+  setMotorSpeed(SERVO_ID5, 0);
+  setMotorSpeed(SERVO_ID6, 0);
+  setAction(1);
+  setAction(2);
+}
+
+void Forward_2(word speed) {
+  setMotorSpeed(SERVO_ID5, speed+1024);
+  setMotorSpeed(SERVO_ID6, speed);
   
   setAction(1);
   setAction(2);
 }
 
-/*
+
+void ClockWise(word speed) {                    // 转弯时设计一个较慢的向前速度？
+  setMotorSpeed(SERVO_ID3, speed);
+  setMotorSpeed(SERVO_ID4, speed);                                           // 需要建立电机转速与转过角度的映射
+  setMotorSpeed(SERVO_ID5, speed);
+  setMotorSpeed(SERVO_ID6, speed);
+  
+  setAction(1);
+  setAction(2);
+  
+}
+
+
+void AntiClockWise(word speed) {                    // 转弯时设计一个较慢的向前速度？
+  setMotorSpeed(SERVO_ID3, speed+1024);
+  setMotorSpeed(SERVO_ID4, speed+1024);                                           // 需要建立电机转速与转过角度的映射
+  setMotorSpeed(SERVO_ID5, speed+1024);
+  setMotorSpeed(SERVO_ID6, speed+1024);
+  
+  setAction(1);
+  setAction(2);
+}
+
 void Stop(){
-  setMotorSpeed(SERVO_ID1,0);
-  setMotorSpeed(SERVO_ID2,0);
-  setAction();
+  setMotorSpeed(SERVO_ID3,0);
+  setMotorSpeed(SERVO_ID4,0);
+  setMotorSpeed(SERVO_ID5, 0);
+  setMotorSpeed(SERVO_ID6, 0);
+  setAction(1);
+  setAction(2);
 }
-*/
-
-/*
-void TurnLeft(word angle) {                    // 转弯时设计一个较慢的向前速度？
-                                            // 需要建立电机转速与转过角度的映射
-
-  setAction();
-}
-*/

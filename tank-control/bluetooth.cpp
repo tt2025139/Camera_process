@@ -1,11 +1,20 @@
 #include "bluetooth.h"
 #include "Motor.h"
 
+#define DEBUG_MSG
+
+uint8_t  moving = 0;
+uint8_t moveornot(){
+    return moving;
+}
+
+
 /**
  * @brief process the packet, and do some actions
  * @param packet the packet to be processed
  */
 void process_packet(Packet* packet, unsigned long& laserTimer) {
+#ifdef DEBUG_MSG
   Serial.print("(");
   Serial.print(packet->lower_angle);
   Serial.print(", ");
@@ -13,11 +22,13 @@ void process_packet(Packet* packet, unsigned long& laserTimer) {
   Serial.print(", ");
   Serial.print(packet->enable_laser);
   Serial.println(")");
+#endif
   setServoAngle(SERVO_ID1, packet->upper_angle, MAX_SPEED);
   setServoAngle(SERVO_ID2, packet->lower_angle, MAX_SPEED);
   if (packet->enable_laser != 0) {
     laserTimer = millis() + LASER_LENGTH;
   }
+  moving = packet->enable_move;
 }
 
 /**
@@ -41,6 +52,7 @@ void setup_bluetooth(SoftwareSerial& bluetooth, ReadState& bluetoothReadState, s
   */
 void loop_process_bluetooth(SoftwareSerial& bluetooth, ReadState& bluetoothReadState, size_t& i_read_buf, uint8_t* buffer, unsigned long& laserTimer) {
   bluetooth.listen();
+  delay(50); // wtf? why we need this?
   while (bluetooth.available() > 0) {
     // ^ FIXME: packet loss when 0xF0 0x00 occurs in packet
     uint8_t ch = bluetooth.read();
