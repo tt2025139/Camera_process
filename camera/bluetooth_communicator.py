@@ -2,6 +2,7 @@
 
 import time
 import serial
+import struct
 from config import SERIAL_PORT, BAUD_RATE
 
 # 定义一个缓冲区阈值，当待发送字节超过这个数时，我们就暂停写入
@@ -28,14 +29,13 @@ def run_bluetooth_communication(shared_state, lock):
                 time.sleep(2)
 
             with lock:
-                # current_firing = shared_state.get('firing')
-                # current_moving = shared_state.get('moving')
-                # current_random_move = shared_state.get('random_move')
+                current_firing = shared_state.get('firing')
+                current_moving = shared_state.get('moving')
+                current_random_move = shared_state.get('random_move')
                 pass
 
-            # 1. 仅在状态改变时才准备发送
 
-            # 2. 在发送前，检查输出缓冲区是否拥堵
+            # 在发送前，检查输出缓冲区是否拥堵
             if ser.out_waiting < BUFFER_THRESHOLD:
                 # data_packet = struct.pack('<BBHHB',
                 #                          0xF0, 0x00,
@@ -44,12 +44,12 @@ def run_bluetooth_communication(shared_state, lock):
                 # ser.write(data_packet)
                 # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
-                # data_packet = struct.pack('<BBHHBB',
-                #                          0xF0, 0x00,
-                #                          current_moving[0], current_moving[1],
-                #                          int(current_firing),int(current_random_move))
-                # ser.write(data_packet)
-                # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
+                data_packet = struct.pack('<BBHHBB',
+                                         0xF0, 0x00,
+                                         current_moving[0], current_moving[1],
+                                         int(current_firing),int(current_random_move))
+                ser.write(data_packet)
+                print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
                 # 更新状态
                 # last_moving = current_moving
