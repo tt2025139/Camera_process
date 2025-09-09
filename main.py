@@ -63,5 +63,5 @@ if __name__ == "__main__":
         # 等待子线程完全结束
         print("[主程序] 等待子线程结束...")
         video_thread.join()
-        bluetooth_thread.join()
+        # bluetooth_thread.join()
         print("[主程序] 所有线程已结束，程序退出。")

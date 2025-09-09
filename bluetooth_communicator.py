@@ -36,12 +36,12 @@ def run_bluetooth_communication(shared_state, lock):
                 
                 # 2. 在发送前，检查输出缓冲区是否拥堵
             if ser.out_waiting < BUFFER_THRESHOLD:
-                    # data_packet = struct.pack('<BBHHB', 
-                    #                          0xF0, 0x00,
-                    #                          current_moving[0], current_moving[1],
-                    #                          int(current_firing))
-                    # ser.write(data_packet)
-                    # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
+                    data_packet = struct.pack('<BBHHB', 
+                                             0xF0, 0x00,
+                                             current_moving[0], current_moving[1],
+                                             int(current_firing))
+                    ser.write(data_packet)
+                    print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
                     # data_packet = struct.pack('<BBHHBB', 
                     #                          0xF0, 0x00,

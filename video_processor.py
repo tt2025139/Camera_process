@@ -11,7 +11,7 @@ class CONFIG:
     """
     # 选项1: 是否启用白平衡 (True/False)
     # 如果图像整体色调偏色（例如偏绿、偏蓝），设置为 True 可以自动校正。
-    ENABLE_WHITE_BALANCE = True
+    ENABLE_WHITE_BALANCE = False
 
     # 选项2: 是否计算并打印 HSV 信息 (True/False)
     # 设置为 True 会为每一帧计算并打印 HSV 的总和、最小值和最大值，用于调试。
@@ -19,8 +19,8 @@ class CONFIG:
 
     # 选项3: 颜色范围 (HSV)
     # 在这里更改 lower 和 upper 的值来追踪不同颜色的物体。
-    LOWER_COLOR_BOUND_1 = np.array([55, 20, 50])  # Example: Brown for a box 示例 (红色低位): np.array([0, 100, 100])
-    UPPER_COLOR_BOUND_1= np.array([75, 160, 180]) # Example: Brown for a box 示例 (红色低位): np.array([20, 255, 255])
+    LOWER_COLOR_BOUND_1 = np.array([40, 55, 120])  # Example: Brown for a box 示例 (红色低位): np.array([0, 100, 100])
+    UPPER_COLOR_BOUND_1= np.array([70, 120, 145]) # Example: Brown for a box 示例 (红色低位): np.array([20, 255, 255])
 
     LOWER_COLOR_BOUND_2 = None  # 示例 (红色高位): np.array([160, 100, 100])
     UPPER_COLOR_BOUND_2 = None  # 示例 (红色高位): np.array([180, 255, 255])
@@ -69,6 +69,34 @@ def run_video_processing(shared_state, lock):
 
     print("[视频线程] 视频流连接成功。")
     bytes_data = b''
+    
+    # --- [新增代码 1/4] ---
+    # 创建一个字典来存储鼠标的当前位置和对应点的HSV值
+    # 使用字典或列表这样的可变对象，方便在回调函数中修改它
+    mouse_data = {'hsv': None}
+
+    # --- [新增代码 2/4] ---
+    # 定义鼠标回调函数
+    # 这个函数将在鼠标事件发生时被OpenCV调用
+    def get_hsv_on_mouse_move(event, x, y, flags, param):
+        # param 参数在这里就是每一帧的 hsv 图像
+        # 当鼠标在窗口上移动时 (EVENT_MOUSEMOVE)
+        if event == cv2.EVENT_MOUSEMOVE:
+            # 从 hsv 图像中获取 (y, x) 坐标的像素值
+            # 注意OpenCV的坐标是 (y, x) 而不是 (x, y)
+            hsv_pixel = param[y, x]
+            # 将获取到的HSV值存入 mouse_data 字典
+            mouse_data['hsv'] = tuple(hsv_pixel)
+
+    # 创建窗口，为后续绑定回调函数做准备
+    cv2.namedWindow('Video Feed')
+    
+    # --- [新增代码 3/4] ---
+    # 将我们定义的回调函数绑定到 'Video Feed' 窗口上
+    # 'param' 参数我们将在主循环中动态传入最新的 hsv 帧
+    # 这里先设置为 None
+    cv2.setMouseCallback('Video Feed', get_hsv_on_mouse_move, param=None)
+
 
     while shared_state.get('running', True):
         try:
@@ -90,23 +118,35 @@ def run_video_processing(shared_state, lock):
                         
                         img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
-                        # --- [条件应用] 白平衡 ---
                         if CONFIG.ENABLE_WHITE_BALANCE:
                             img = apply_white_balance(img)
 
-                        # RGB to HSV
                         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+                        
+                        # --- [新增代码 4/4] ---
+                        # 每次循环时，都更新回调函数的 param 参数为最新的 hsv 图像
+                        cv2.setMouseCallback('Video Feed', get_hsv_on_mouse_move, param=hsv)
+                        
+                        # 如果 mouse_data 中有值，就将其绘制在图像上
+                        if mouse_data['hsv'] is not None:
+                            h, s, v = mouse_data['hsv']
+                            hsv_text = f'HSV: ({h}, {s}, {v})'
+                            # 将文字绘制在左上角
+                            cv2.putText(img, hsv_text, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 
+                                        0.6, (255, 255, 0), 2, cv2.LINE_AA)
 
-                        # --- [条件计算] HSV 相关信息 ---
+
                         if CONFIG.CALCULATE_HSV_INFO:
+                            # ... (这部分代码保持不变)
                             hsv_sum = np.sum(hsv, axis=(0, 1))
                             h_min, s_min, v_min = np.min(hsv, axis=(0, 1))
                             h_max, s_max, v_max = np.max(hsv, axis=(0, 1))
-                            print(f"HSV Sums: H={hsv_sum[0]}, S={hsv_sum[1]}, V={hsv_sum[2]}")
-                            print(f"HSV Minima: H={h_min}, S={s_min}, V={v_min}")
-                            print(f"HSV Maxima: H={h_max}, S={s_max}, V={v_max}")
+
+                            if (((int)(time.time())) % 1 == 0):
+                                print(f"HSV Avgs: H={hsv_sum[0]/(320*240)}, S={hsv_sum[1]/(320*240)}, V={hsv_sum[2]/(320*240)}")
+                                print(f"HSV Minima: H={h_min}, S={s_min}, V={v_min}")
+                                print(f"HSV Maxima: H={h_max}, S={s_max}, V={v_max}")
                         
-                        # --- 使用宏定义的颜色范围进行物体检测 ---
                         color_mask1 = cv2.inRange(hsv, CONFIG.LOWER_COLOR_BOUND_1, CONFIG.UPPER_COLOR_BOUND_1)
 
                         if CONFIG.LOWER_COLOR_BOUND_2 is not None and CONFIG.UPPER_COLOR_BOUND_2 is not None:
@@ -115,7 +155,6 @@ def run_video_processing(shared_state, lock):
                         else:
                             color_mask = color_mask1
                         
-                        # morphologyEx
                         kernel = np.ones((5, 5), np.uint8)
                         color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
                         color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
