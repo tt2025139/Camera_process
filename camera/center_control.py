@@ -45,9 +45,9 @@ def run_center_control(shared_state, lock):
             move_x, move_y = moving
 
             if abs(error_x) > CENTER_TOLERANCE:
-                move_x += -3 if error_x > 0 else +3
+                move_x += -1 if error_x > 0 else +1
             if abs(error_y) > CENTER_TOLERANCE:
-                move_y += -3 if error_y > 0 else +3
+                move_y += -1 if error_y > 0 else +1
 
             if (
                 abs(last_coordinates[0] - LIGHT_CENTER[0]) <= CENTER_TOLERANCE
@@ -61,23 +61,27 @@ def run_center_control(shared_state, lock):
 
             if move_y < SERVO_Y_MIN:
                     move_y = SERVO_Y_MIN
-                    ifturn = 3
-                    random_move = False
+                    ifturn = 0
+                    random_move = True
+                    hascanned = True
 
             if move_y > SERVO_Y_MAX:
                     move_y = SERVO_Y_MAX
-                    ifturn = 1
-                    random_move = False
+                    ifturn = 0
+                    random_move = True
+                    hascanned = True
+
 
             if move_x > SERVO_X_MAX - 20:
                     move_x = SERVO_X_MAX - 20
-                    ifturn = 1
+                    ifturn = 2
                     random_move = False
 
             if move_x < SERVO_X_MIN + 20:
                     move_x = SERVO_X_MIN + 20
-                    ifturn = 2
+                    ifturn = 1
                     random_move = False
+
 
         else:
 
@@ -97,13 +101,13 @@ def run_center_control(shared_state, lock):
                 # 左右扫描
                 if shared_state["scan_direction_x"] == 1:
                     if move_x < SERVO_X_MAX:
-                        move_x += 5
+                        move_x += 3
                     else:
                         shared_state["scan_direction_x"] = -1
                         move_y += 30
                 else:
                     if move_x > SERVO_X_MIN:
-                        move_x -= 5
+                        move_x -= 3
                     else:
 
                         shared_state["scan_direction_x"] = 1

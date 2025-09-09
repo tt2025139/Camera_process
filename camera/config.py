@@ -13,8 +13,8 @@ MIN_CONTOUR_AREA = 20  # 识别为目标的最小轮廓面积
 FRAME_WIDTH = 240       # 视频帧宽度
 FRAME_HEIGHT = 320      # 视频帧高度
 
-LIGHT_CENTER = (175, 170)  # 近似激光中心点
-CENTER_TOLERANCE = 20  # 允许的中心误差范围（像素）
+LIGHT_CENTER = (155, 185)  # 近似激光中心点
+CENTER_TOLERANCE = 10  # 允许的中心误差范围（像素）
 
 
 # --- 舵机限位配置 ---

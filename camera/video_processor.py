@@ -28,10 +28,15 @@ class CONFIG:
     # UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
     # LOWER_COLOR_BOUND_2 = None  
     # UPPER_COLOR_BOUND_2 = None  
-    LOWER_COLOR_BOUND_1 = np.array([0, 100, 50])
-    UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
-    LOWER_COLOR_BOUND_2 = np.array([150, 100, 50])  # 可选第二个范围
-    UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
+    # LOWER_COLOR_BOUND_1 = np.array([0, 100, 50])
+    # UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
+    # LOWER_COLOR_BOUND_2 = np.array([150, 100, 50])  # 可选第二个范围
+    # UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
+
+    LOWER_COLOR_BOUND_1 = np.array([90, 100, 50])
+    UPPER_COLOR_BOUND_1 = np.array([150, 255, 255])
+    LOWER_COLOR_BOUND_2 = None  # 可选第二个范围
+    UPPER_COLOR_BOUND_2 = None
 
 
 # ... apply_white_balance 函数保持不变 ...
