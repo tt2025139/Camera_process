@@ -57,17 +57,17 @@ def run_center_control(shared_state, lock):
             else:
                 firing = False
 
+            ifturn = 0
+
             if move_y < SERVO_Y_MIN:
                     move_y = SERVO_Y_MIN
-                    ifturn = 0
-                    hascanned = True
-                    random_move = True
+                    ifturn = 3
+                    random_move = False
 
             if move_y > SERVO_Y_MAX:
-                    move_y = SERVO_Y_MIN
-                    ifturn = 0
-                    hascanned = True
-                    random_move = True
+                    move_y = SERVO_Y_MAX
+                    ifturn = 1
+                    random_move = False
 
             if move_x > SERVO_X_MAX - 20:
                     move_x = SERVO_X_MAX - 20
@@ -78,13 +78,6 @@ def run_center_control(shared_state, lock):
                     move_x = SERVO_X_MIN + 20
                     ifturn = 2
                     random_move = False
-
-            if hascanned == True:
-                # 已扫描过，则开始巡航
-                time.sleep(3)  # 停顿3秒
-                random_move = False
-                ifturn = 0
-                hascanned = False
 
         else:
 
