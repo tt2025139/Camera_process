@@ -1,4 +1,4 @@
-# main.py
+"""Main thread"""
 
 import threading
 import time
@@ -9,59 +9,65 @@ from center_control import run_center_control
 if __name__ == "__main__":
     # 创建用于线程间通信的共享状态字典和锁
     shared_state = {
-        'center_coordinates': None,
-        'firing': False,
-        'moving': (0,0),
-        'scan_direction_x': 1,
-        'running': True,
-        'random_move': False
+        "center_coordinates": None,
+        "firing": False,
+        "moving": (0, 0),
+        "scan_direction_x": 1,
+        "running": True,
+        "random_move": False,
     }
     lock = threading.Lock()
 
     # 创建线程
-    video_thread = threading.Thread(target=run_video_processing, args=(shared_state, lock))
-    bluetooth_thread = threading.Thread(target=run_bluetooth_communication, args=(shared_state, lock))
-    center_control_thread = threading.Thread(target=run_center_control, args=(shared_state, lock))
+    video_thread = threading.Thread(
+        target=run_video_processing, args=(shared_state, lock)
+    )
+    bluetooth_thread = threading.Thread(
+        target=run_bluetooth_communication, args=(shared_state, lock)
+    )
+    center_control_thread = threading.Thread(
+        target=run_center_control, args=(shared_state, lock)
+    )
 
     print("[主程序] 正在启动线程...")
-    
+
     # 启动线程
     video_thread.start()
     bluetooth_thread.start()
     center_control_thread.start()
-    
+
     print("[主程序] 线程已启动。在视频窗口按 ESC 键或在终端按 Ctrl+C 即可退出程序。")
 
     try:
         # 主线程现在在一个循环中等待，这样才能响应 KeyboardInterrupt
         # 并检查子线程是否因为其他原因（如关闭视频窗口）而退出
-        while shared_state['running']:
+        while shared_state["running"]:
             if not video_thread.is_alive():
                 print("[主程序] 视频线程已退出，正在关闭程序...")
                 with lock:
-                    shared_state['running'] = False
+                    shared_state["running"] = False
                 break
             if not bluetooth_thread.is_alive():
                 print("[主程序] 蓝牙线程已退出，正在关闭程序...")
                 with lock:
-                    shared_state['running'] = False
+                    shared_state["running"] = False
                 break
             if not center_control_thread.is_alive():
                 print("[主程序] 中心控制线程已退出，正在关闭程序...")
                 with lock:
-                    shared_state['running'] = False
-                break    
-            time.sleep(0.5) #短暂休眠以降低CPU占用
+                    shared_state["running"] = False
+                break
+            time.sleep(0.5)  # 短暂休眠以降低CPU占用
 
     except KeyboardInterrupt:
         print("\n[主程序] 检测到 Ctrl+C，正在关闭所有线程...")
         # 捕获到 Ctrl+C 后，设置 'running' 为 False，通知子线程退出
         with lock:
-            shared_state['running'] = False
+            shared_state["running"] = False
 
     finally:
         # 等待子线程完全结束
         print("[主程序] 等待子线程结束...")
         video_thread.join()
-        # bluetooth_thread.join()
+        bluetooth_thread.join()
         print("[主程序] 所有线程已结束，程序退出。")
