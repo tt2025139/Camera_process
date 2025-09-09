@@ -9,7 +9,7 @@ BAUD_RATE = 9600  # 请确保与你的 HC-06 模块波特率一致
 
 # --- 图像处理配置 ---
 
-MIN_CONTOUR_AREA = 500  # 识别为目标的最小轮廓面积
+MIN_CONTOUR_AREA = 20  # 识别为目标的最小轮廓面积
 FRAME_WIDTH = 240       # 视频帧宽度
 FRAME_HEIGHT = 320      # 视频帧高度
 

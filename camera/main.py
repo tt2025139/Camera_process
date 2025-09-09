@@ -15,6 +15,7 @@ if __name__ == "__main__":
         "scan_direction_x": 1,
         "running": True,
         "random_move": False,
+        'ifturn':0
     }
     lock = threading.Lock()
 

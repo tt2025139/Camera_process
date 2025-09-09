@@ -7,7 +7,7 @@ from config import SERIAL_PORT, BAUD_RATE
 
 # 定义一个缓冲区阈值，当待发送字节超过这个数时，我们就暂停写入
 # 这个值可以根据实际情况调整，例如设置为数据包长度的几倍
-BUFFER_THRESHOLD = 24
+BUFFER_THRESHOLD = 27
 
 def run_bluetooth_communication(shared_state, lock):
     """
@@ -31,6 +31,7 @@ def run_bluetooth_communication(shared_state, lock):
                 current_firing = shared_state.get('firing')
                 current_moving = shared_state.get('moving')
                 current_random_move = shared_state.get('random_move')
+                current_ifturn = shared_state.get('ifturn')
                 pass
 
 
@@ -43,10 +44,11 @@ def run_bluetooth_communication(shared_state, lock):
                 # ser.write(data_packet)
                 # print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 
-                data_packet = struct.pack('<BBHHBB',
+                data_packet = struct.pack('<BBHHBBB',
                                          0xF0, 0x00,
                                          current_moving[0], current_moving[1],
-                                         int(current_firing),int(current_random_move))
+                                         int(current_firing),int(current_random_move),
+                                         int(current_ifturn))
                 ser.write(data_packet)
                 print(f"[蓝牙线程] 发送指令: {data_packet.hex(' ')} (缓冲区: {ser.out_waiting}字节)")
 

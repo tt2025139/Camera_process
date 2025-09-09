@@ -19,19 +19,19 @@ class CONFIG:
 
     # True:  使用下面的 H_MIN/MAX, S_MIN/MAX, 并动态计算V通道的阈值。 (推荐)
     # False: 使用下面传统的 LOWER/UPPER_COLOR_BOUND_1 固定阈值。
-    ADAPTIVE_V_CHANNEL = True
+    ADAPTIVE_V_CHANNEL = False
     V_TOLERANCE = 60  # V通道动态阈值的容差范围
 
 
     # --- 传统固定阈值 (当 ADAPTIVE_V_CHANNEL = False 时生效) ---
-    LOWER_COLOR_BOUND_1 = np.array([40, 70, 10])
-    UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
-    LOWER_COLOR_BOUND_2 = None  
-    UPPER_COLOR_BOUND_2 = None  
-    # LOWER_COLOR_BOUND_1 = np.array([0, 100, 100])
-    # UPPER_COLOR_BOUND_1 = np.array([20, 255, 255])
-    # LOWER_COLOR_BOUND_2 = np.array([160, 100, 100])  # 可选第二个范围
-    # UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
+    # LOWER_COLOR_BOUND_1 = np.array([40, 70, 10])
+    # UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
+    # LOWER_COLOR_BOUND_2 = None  
+    # UPPER_COLOR_BOUND_2 = None  
+    LOWER_COLOR_BOUND_1 = np.array([0, 100, 50])
+    UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
+    LOWER_COLOR_BOUND_2 = np.array([150, 100, 50])  # 可选第二个范围
+    UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
 
 
 # ... apply_white_balance 函数保持不变 ...
@@ -175,16 +175,16 @@ def run_video_processing(shared_state, lock):
                         # --- 使用宏定义的颜色范围进行物体检测 ---
                         if CONFIG.ADAPTIVE_V_CHANNEL:
                             # 1. 对 BOUND_1 进行HS初筛 (更清晰的写法)
-                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 120])
-                            upper_hs1 = np.array([CONFIG.UPPER_COLOR_BOUND_1[0], CONFIG.UPPER_COLOR_BOUND_1[1], 255])
+                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 100])
+                            upper_hs1 = np.array([CONFIG.UPPER_COLOR_BOUND_1[0], CONFIG.UPPER_COLOR_BOUND_1[1], 230])
                             hs_mask1 = cv2.inRange(hsv, lower_hs1, upper_hs1)
                             
                             combined_hs_mask = hs_mask1
                             
                             # (如果存在) 对 BOUND_2 进行HS初筛并合并
                             if CONFIG.LOWER_COLOR_BOUND_2 is not None and CONFIG.UPPER_COLOR_BOUND_2 is not None:
-                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 120])
-                                upper_hs2 = np.array([CONFIG.UPPER_COLOR_BOUND_2[0], CONFIG.UPPER_COLOR_BOUND_2[1], 255])
+                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 100])
+                                upper_hs2 = np.array([CONFIG.UPPER_COLOR_BOUND_2[0], CONFIG.UPPER_COLOR_BOUND_2[1], 230])
                                 hs_mask2 = cv2.inRange(hsv, lower_hs2, upper_hs2)
                                 combined_hs_mask = cv2.bitwise_or(hs_mask1, hs_mask2)
 

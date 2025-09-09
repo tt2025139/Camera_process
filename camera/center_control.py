@@ -29,9 +29,9 @@ def run_center_control(shared_state, lock):
             moving = shared_state.get("moving")
             firing = shared_state.get("firing")
             random_move = shared_state.get("random_move", False)
+            ifturn = shared_state.get("ifturn")
 
         if center_coordinates is not None:
-            time.sleep(0.05)
             last_coordinates = center_coordinates
 
         if (
@@ -57,12 +57,42 @@ def run_center_control(shared_state, lock):
             else:
                 firing = False
 
+            if move_y < SERVO_Y_MIN:
+                    move_y = SERVO_Y_MIN
+                    ifturn = 0
+                    hascanned = True
+                    random_move = True
+
+            if move_y > SERVO_Y_MAX:
+                    move_y = SERVO_Y_MIN
+                    ifturn = 0
+                    hascanned = True
+                    random_move = True
+
+            if move_x > SERVO_X_MAX - 20:
+                    move_x = SERVO_X_MAX - 20
+                    ifturn = 1
+                    random_move = False
+
+            if move_x < SERVO_X_MIN + 20:
+                    move_x = SERVO_X_MIN + 20
+                    ifturn = 2
+                    random_move = False
+
+            if hascanned == True:
+                # 已扫描过，则开始巡航
+                time.sleep(3)  # 停顿3秒
+                random_move = False
+                ifturn = 0
+                hascanned = False
+
         else:
 
             if hascanned == True:
                 # 已扫描过，则开始巡航
                 time.sleep(3)  # 停顿3秒
                 random_move = False
+                ifturn = 0
                 hascanned = False
             else:
                 # 定义巡航方向
@@ -89,8 +119,11 @@ def run_center_control(shared_state, lock):
                 # 如果 Y 轴到达边界，则复位
                 if move_y > SERVO_Y_MAX:
                     move_y = SERVO_Y_MIN
+                    ifturn = 0
                     random_move = True
                     hascanned = True
+
+
 
             firing = False
 
@@ -104,6 +137,7 @@ def run_center_control(shared_state, lock):
             shared_state["moving"] = moving
             shared_state["firing"] = firing
             shared_state["random_move"] = random_move
+            shared_state["ifturn"] = ifturn
 
         time.sleep(0.1)
 
