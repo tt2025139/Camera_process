@@ -28,15 +28,15 @@ class CONFIG:
     # UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
     # LOWER_COLOR_BOUND_2 = None  
     # UPPER_COLOR_BOUND_2 = None  
-    # LOWER_COLOR_BOUND_1 = np.array([0, 100, 50])
-    # UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
-    # LOWER_COLOR_BOUND_2 = np.array([150, 100, 50])  # 可选第二个范围
-    # UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
+    LOWER_COLOR_BOUND_1 = np.array([0, 100, 20])
+    UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
+    LOWER_COLOR_BOUND_2 = np.array([150, 100, 20])  # 可选第二个范围
+    UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
 
-    LOWER_COLOR_BOUND_1 = np.array([90, 100, 50])
-    UPPER_COLOR_BOUND_1 = np.array([150, 255, 255])
-    LOWER_COLOR_BOUND_2 = None  # 可选第二个范围
-    UPPER_COLOR_BOUND_2 = None
+    # LOWER_COLOR_BOUND_1 = np.array([90, 100, 50])
+    # UPPER_COLOR_BOUND_1 = np.array([150, 255, 255])
+    # LOWER_COLOR_BOUND_2 = None  # 可选第二个范围
+    # UPPER_COLOR_BOUND_2 = None
 
 
 # ... apply_white_balance 函数保持不变 ...
@@ -238,7 +238,7 @@ def run_video_processing(shared_state, lock):
                                     cY = int(M["m01"] / M["m00"])
                                     
                                     with lock:
-                                        shared_state['center_coordinates'] = (cX, cY)
+                                        shared_state['detection_data'] = ((cX, cY),time.time())
                                     found_object = True
 
                                     # 用绿色绘制通过所有检查的最终轮廓
@@ -249,7 +249,7 @@ def run_video_processing(shared_state, lock):
                         
                         if not found_object:
                             with lock:
-                                shared_state['center_coordinates'] = None
+                                shared_state['detection_data'] = None
 
                         cv2.imshow('Video Feed', img)
                         cv2.imshow('Color Mask', color_mask)

@@ -9,7 +9,7 @@ from center_control import run_center_control
 if __name__ == "__main__":
     # 创建用于线程间通信的共享状态字典和锁
     shared_state = {
-        "center_coordinates": None,
+        "detection_data": None,
         "firing": False,
         "moving": (0, 0),
         "scan_direction_x": 1,

@@ -23,3 +23,7 @@ SERVO_X_MIN = 0
 SERVO_X_MAX = 300
 SERVO_Y_MIN = 0
 SERVO_Y_MAX = 90
+
+
+AVG_CAPTURE_LATENCY = 0.3  # (秒) 你手动估算出的平均采集延迟
+CONTROL_LOOP_DT = 0.05     # (秒) 中控线程的目标循环周期
