@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>激光坦克遥控平台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+        .bg-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            background: url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            filter: blur(3px) brightness(0.8);
+        }
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff5722;
+            text-shadow: 2px 2px 8px #333;
+            letter-spacing: 4px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+        }
+        .videos {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .videos video {
+            width: 400px;
+            height: 250px;
+            background: #222;
+            border: 2px solid #ccc;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 24px;
+        }
+        .buttons button {
+        }
+        .button-section {
+            border: 2px solid #1976d2;
+            border-radius: 12px;
+            padding: 14px 0 7px 0;
+            margin-bottom: 0;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        .wasd-row {
+            display: flex;
+            justify-content: center;
+            gap: 42px;
+            margin-bottom: 14px;
+        }
+        .wasd-btn {
+            padding: 14px 0;
+            width: 110px;
+            font-size: 14px;
+            border-radius: 12px;
+            border: none;
+            background: #1976d2;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .wasd-btn:hover {
+            background: #1565c0;
+        }
+        .buttons button:hover {
+            background: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blur"></div>
+    <div class="content">
+        <h1>激光坦克遥控平台</h1>
+        <div class="container">
+            <div class="videos">
+                <video controls>
+                    <video src="video_feed">
+                    您的浏览器不支持视频标签。
+                </video>
+                <video controls>
+                    <source src="video2.mp4" type="video/mp4">
+                    您的浏览器不支持视频标签。
+                </video>
+            </div>
+            <div class="buttons">
+                <!-- 底盘区域 -->
+                <div class="button-section">
+                    <div class="section-title">底盘</div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('0')">前进</button>
+                    </div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('1')">左转</button>
+                        <button class="wasd-btn" onclick="sendAction('2')">右转</button>
+                    </div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('3')">后退</button>
+                    </div>
+                </div>
+                <!-- 云台区域 -->
+                <div class="button-section">
+                    <div class="section-title">云台</div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('4')">上升</button>
+                    </div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('5')">左转</button>
+                        <button class="wasd-btn" onclick="sendAction('6')">右转</button>
+                    </div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('7')">下降</button>
+                    </div>
+                </div>
+                <!-- 激光区域 -->
+                <div class="button-section">
+                    <div class="section-title">激光</div>
+                    <div class="wasd-row">
+                        <button class="wasd-btn" onclick="sendAction('8')">发射</button>
+                        <button class="wasd-btn" onclick="sendAction('9')">停止</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+function sendAction(action) {
+    fetch('/action', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: action})
+    });
+}
+</script>
+</body>
+</html>
