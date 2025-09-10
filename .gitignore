@@ -15,3 +15,6 @@ __pycache__/
 # Before
 
 before/
+
+# VSCode files
+.vscode/

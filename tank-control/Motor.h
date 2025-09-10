@@ -49,7 +49,11 @@ void setServoPos(byte id, word pos, word speed);
 void setServoAngle(byte id, word angle, word speed);
 void MotorInit(byte id);
 void Forward1(word speed);
-
+void Forward_1(word speed);
+void Forward_2(word speed);
+void ClockWise(word speed);
+void AntiClockWise(word speed);
+uint8_t moveornot(uint8_t moving);
 void serialEnd();
 
 #endif
