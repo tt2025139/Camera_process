@@ -14,6 +14,7 @@ from config import (
     CONTROL_LOOP_DT,
 )
 import numpy as np
+import copy
 from filterpy.kalman import KalmanFilter
 
 
@@ -24,8 +25,8 @@ def create_kalman_filter(dt):
     kf.F = np.array([[1, 0, dt, 0], [0, 1, 0, dt],
                        [0, 0, 1, 0], [0, 0, 0, 1]])
     kf.H = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
-    kf.R *= 5
-    kf.Q[2:,2:] *= 0.1
+    kf.R *= 0.002
+    kf.Q[2:,2:] *= 0.01
     kf.P *= 100
     return kf
 
@@ -99,16 +100,19 @@ def run_center_control(shared_state, lock):
                 total_prediction_time += processing_latency
 
             # 创建一个临时的滤波器副本用于预测，不污染主滤波器的状态
-            kf_future = kf.copy()
+            kf_future = copy.deepcopy(kf) 
             kf_future.F[0, 2] = total_prediction_time
             kf_future.F[1, 3] = total_prediction_time
             
-            predicted_state = kf_future.predict()
+            kf_future.predict()
+
+            predicted_state = kf_future.x
+
             predicted_coords = (predicted_state[0, 0], predicted_state[1, 0])
             
             # (丢失目标的逻辑可以简化或保留，这里先用简化版)
-            if detection_data is None and (current_time - shared_state.get('last_detection_time', 0) > 2.0):
-                 kf_initialized = False # 丢失超过2秒，放弃追踪
+            if detection_data is None and (current_time - shared_state.get('last_detection_time', 0) > 1.0):
+                 kf_initialized = False # 丢失超过1秒，放弃追踪
             else:
                 if detection_data is not None:
                     shared_state['last_detection_time'] = data_arrival_time
