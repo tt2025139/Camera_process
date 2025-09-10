@@ -44,7 +44,7 @@
             flex-direction: column;
             gap: 20px;
         }
-        .videos video {
+        .videos img, .videos video {
             width: 400px;
             height: 250px;
             background: #222;
@@ -111,14 +111,7 @@
         <h1>激光坦克遥控平台</h1>
         <div class="container">
             <div class="videos">
-                <video controls>
-                    <video src="video_feed">
-                    您的浏览器不支持视频标签。
-                </video>
-                <video controls>
-                    <source src="video2.mp4" type="video/mp4">
-                    您的浏览器不支持视频标签。
-                </video>
+                <img src="/video_feed" alt="摄像头实时画面">
             </div>
             <div class="buttons">
                 <!-- 底盘区域 -->
@@ -126,13 +119,14 @@
                     <div class="section-title">底盘</div>
                     <div class="wasd-row">
                         <button class="wasd-btn" onclick="sendAction('0')">前进</button>
+                        <button class="wasd-btn" onclick="sendAction('3')">后退</button>
                     </div>
                     <div class="wasd-row">
                         <button class="wasd-btn" onclick="sendAction('1')">左转</button>
                         <button class="wasd-btn" onclick="sendAction('2')">右转</button>
                     </div>
                     <div class="wasd-row">
-                        <button class="wasd-btn" onclick="sendAction('3')">后退</button>
+                        <button class="wasd-btn" onclick="sendAction('10')">停止</button>
                     </div>
                 </div>
                 <!-- 云台区域 -->

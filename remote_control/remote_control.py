@@ -36,58 +36,71 @@ def run_remote_control(shared_state, lock):
                 shared_state.get('isfiring'),
                 shared_state.get('nofiring'),
             )
-            move_x, move_y = shared_state.get('moving')
+
+            moving = shared_state.get('moving',(0,0))
             firing = shared_state.get('firing')
             bottom = shared_state.get('bottom')
             ifturn = 0
+            move_x = moving[0]
+            move_y = moving[1]
 
-        # --- 底盘前进后退左转右转 ---
-        if bottom_move == (0, 0, 0, 0):
-                bottom = 0
-                time.sleep(0.05)
+            # --- 底盘前进后退左转右转 ---
+            if bottom_move is not None:
+                  if bottom_move == (0, 0, 0, 0):
+                        bottom = 0
+                        time.sleep(0.05)
 
-        elif bottom_move == (1, 0, 0, 0):
-                bottom = 2
-                time.sleep(0.05)
+                  elif bottom_move == (1, 0, 0, 0):
+                        bottom = 2
+                        time.sleep(0.05)
 
-        elif bottom_move == (0, 1, 0, 0):
-                bottom = 3
-                time.sleep(0.05)
+                  elif bottom_move == (0, 1, 0, 0):
+                        bottom = 3
+                        time.sleep(0.05)
 
-        elif bottom_move == (0, 0, 1, 0):
-                bottom = 4
-                time.sleep(0.05)
+                  elif bottom_move == (0, 0, 1, 0):
+                        bottom = 4
+                        time.sleep(0.05)
 
-        elif bottom_move == (0, 0, 0, 1):
-                bottom = 5
-                time.sleep(0.05)
-        
-        else:
-              bottom = 0
-              time.sleep(0.05)
+                  elif bottom_move == (0, 0, 0, 1):
+                        bottom = 5
+                        time.sleep(0.05)
+                  
+                  else:
+                        bottom = 0
+                        time.sleep(0.05)
 
-        # --- 云台上下左右  ---
+            # --- 云台上下左右  ---
+            if watching_move is not None:
+                  # 检查 "上升" 信号
+                  if watching_move[0] == 1:
+                        move_y += 10
+                        shared_state['watching_up'] = 0
+                  
+                  # 检查 "下降" 信号
+                  elif watching_move[1] == 1:
+                        move_y -= 10
+                        shared_state['watching_down'] = 0
+                  
+                  # 检查 "左转" 信号
+                  elif watching_move[2] == 1:
+                        move_x += 30
+                        shared_state['watching_left'] = 0
+                  
+                  # 检查 "右转" 信号
+                  elif watching_move[3] == 1:
+                        move_x -= 30
+                        shared_state['watching_right'] = 0
 
-        if watching_move == (1, 0, 0, 0):
-              move_y += 5
-        
-        elif watching_move == (0, 1, 0, 0):
-              move_y -= 5
-        
-        elif watching_move == (0, 0, 1, 0):
-              move_x -= 5
-        
-        elif watching_move == (0, 0, 0, 1):
-              move_x += 5
+                  
+            # --- 控制是否开火  ---
+            if iffiring is not None:
 
-            
-        # --- 控制是否开火  ---
+                  if iffiring == (1, 0):
+                        firing = 1
 
-        if iffiring == (1, 0):
-              firing = 1
-
-        if iffiring == (0, 1):
-              firing = 0
+                  if iffiring == (0, 1):
+                        firing = 0
 
 
 
@@ -100,6 +113,9 @@ def run_remote_control(shared_state, lock):
             shared_state["firing"] = firing
             shared_state["ifturn"] = ifturn
             shared_state["random_move"] = bottom
+
+
+        time.sleep(0.02)
         
 
     print("[遥控线程] 正在关闭...")

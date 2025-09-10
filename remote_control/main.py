@@ -1,13 +1,14 @@
-"""Main thread"""
-
 import threading
 import time
 from bluetooth_communicator import run_bluetooth_communication
 from remote_control import run_remote_control
+# 导入修改后的模块中的新函数
+from Html_Processor import init_app, run_app
 
 if __name__ == "__main__":
     # 创建用于线程间通信的共享状态字典和锁
     shared_state = {
+        "running": True,  # 明确设置启动状态
         "bottom_forward": 0,
         "bottom_backward": 0,
         "bottom_left": 0,
@@ -17,55 +18,67 @@ if __name__ == "__main__":
         "watching_left": 0,
         "watching_right": 0,
         "isfiring": 0,
-        "nofiring": 0,
-        "move": (0,0),
+        "nofiring": 1, # 默认停止发射
+        "moving": (0, 0), # 舵机初始位置
         "bottom": 0,
-        "firing": False
+        "firing": 0, # 初始为布尔值或整数都可以，但要统一
+        "ifturn": 0,
+        "random_move": 0
     }
     lock = threading.Lock()
 
-    # 创建线程
+    # --- 关键修改 ---
+    # 在启动Flask线程之前，初始化它，将共享状态和锁传递进去
+    init_app(shared_state, lock)
 
+    # 创建线程
     bluetooth_thread = threading.Thread(
         target=run_bluetooth_communication, args=(shared_state, lock)
     )
     remote_control_thread = threading.Thread(
         target=run_remote_control, args=(shared_state, lock)
     )
+    # 线程目标修改为 run_app，而不是 gen_video_stream
+    html_processor_thread = threading.Thread(
+        target=run_app, args=() # run_app 不需要参数，因为它使用全局变量
+    )
+
+    # --- 关键修改 ---
+    # 将HTML处理线程设置为守护线程
+    # 这意味着当主程序退出时，这个线程会被强制终止
+    # 从而解决了Ctrl+C无法关闭程序的问题
+    html_processor_thread.daemon = True
 
     print("[主程序] 正在启动线程...")
 
     # 启动线程
-
     bluetooth_thread.start()
     remote_control_thread.start()
+    html_processor_thread.start()
 
-    print("[主程序] 线程已启动。在视频窗口按 ESC 键或在终端按 Ctrl+C 即可退出程序。")
+    print("[主程序] 线程已启动。请在浏览器打开 http://127.0.0.1:5000/display")
+    print("[主程序] 在终端按 Ctrl+C 即可退出程序。")
 
     try:
-        # 主线程现在在一个循环中等待，这样才能响应 KeyboardInterrupt
-        # 并检查子线程是否因为其他原因（如关闭视频窗口）而退出
         while shared_state["running"]:
-            if not bluetooth_thread.is_alive():
-                print("[主程序] 蓝牙线程已退出，正在关闭程序...")
-                with lock:
-                    shared_state["running"] = False
-                break
-            if not remote_control_thread.is_alive():
-                print("[主程序] 中心控制线程已退出，正在关闭程序...")
+            if not bluetooth_thread.is_alive() or not remote_control_thread.is_alive():
+                print("[主程序] 检测到核心线程已退出，正在关闭程序...")
                 with lock:
                     shared_state["running"] = False
                 break
             time.sleep(0.5)  # 短暂休眠以降低CPU占用
 
     except KeyboardInterrupt:
-        print("\n[主程序] 检测到 Ctrl+C，正在关闭所有线程...")
-        # 捕获到 Ctrl+C 后，设置 'running' 为 False，通知子线程退出
+        print("\n[主程序] 检测到 Ctrl+C，正在通知所有线程关闭...")
         with lock:
             shared_state["running"] = False
 
     finally:
-        # 等待子线程完全结束
         print("[主程序] 等待子线程结束...")
-        bluetooth_thread.join()
+        # 等待非守护线程结束
+        if bluetooth_thread.is_alive():
+            bluetooth_thread.join()
+        if remote_control_thread.is_alive():
+            remote_control_thread.join()
+        # 不需要等待守护线程(html_processor_thread)，它会自动退出
         print("[主程序] 所有线程已结束，程序退出。")
