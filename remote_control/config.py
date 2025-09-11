@@ -1,7 +1,7 @@
 """Configuration of some constants"""
 
 # --- 视频流配置 ---
-VIDEO_STREAM_URL = "http://192.168.188.89:81/stream"
+VIDEO_STREAM_URL = "http://192.168.188.16:81/stream"
 
 # --- 蓝牙串口配置 ---
 SERIAL_PORT = "COM3"  # 请根据你的设备管理器修改
