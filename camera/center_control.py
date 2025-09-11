@@ -25,8 +25,8 @@ def create_kalman_filter(dt):
     kf.F = np.array([[1, 0, dt, 0], [0, 1, 0, dt],
                        [0, 0, 1, 0], [0, 0, 0, 1]])
     kf.H = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
-    kf.R *= 0.002
-    kf.Q[2:,2:] *= 0.01
+    kf.R *= 0.02
+    kf.Q[2:,2:] *= 0.02
     kf.P *= 100
     return kf
 
@@ -58,7 +58,7 @@ def run_center_control(shared_state, lock):
         # 无论有无新数据，我们都需要让滤波器的内部时间前进
         time_since_last_update = current_time - last_update_time
         # 为了防止系统暂停过久导致预测跑飞，可以加一个上限
-        time_since_last_update = min(time_since_last_update, 0.5) 
+        time_since_last_update = min(time_since_last_update, 1) 
         
         if kf_initialized:
             # 动态调整状态转移矩阵F以匹配真实的时间间隔
@@ -123,9 +123,9 @@ def run_center_control(shared_state, lock):
                 
                 move_x, move_y = moving
                 if abs(error_x) > CENTER_TOLERANCE:
-                    move_x += -2 if error_x > 0 else +2
+                    move_x += -1 if error_x > 0 else +1
                 if abs(error_y) > CENTER_TOLERANCE:
-                    move_y += -2 if error_y > 0 else +2
+                    move_y += -1 if error_y > 0 else +1
 
                 if abs(error_x) <= CENTER_TOLERANCE and abs(error_y) <= CENTER_TOLERANCE:
                     firing = True
@@ -136,24 +136,40 @@ def run_center_control(shared_state, lock):
 
                 if move_y < SERVO_Y_MIN:
                         move_y = SERVO_Y_MIN
-                        ifturn = 0
-                        random_move = True
-                        hasscanned = True
+                        if move_x > 100:
+                            ifturn = 2
+                            move_x -= 10
+                            random_move = False
+                        elif move_x < 80:
+                            ifturn = 1
+                            move_x += 10
+                            random_move = False
+                        else:
+                            ifturn = 3
+                            random_move = False
 
                 if move_y > SERVO_Y_MAX:
                         move_y = SERVO_Y_MAX
-                        ifturn = 0
-                        random_move = True
-                        hasscanned = True
+                        if move_x > 100:
+                            ifturn = 2
+                            move_x -= 10
+                            random_move = False
+                        elif move_x < 80:
+                            ifturn = 1
+                            move_x += 10
+                            random_move = False
+                        else:
+                            ifturn = 3
+                            random_move = False
 
 
-                if move_x > SERVO_X_MAX - 20:
-                        move_x = SERVO_X_MAX - 20
+                if move_x > SERVO_X_MAX - 5:
+                        move_x = SERVO_X_MAX - 5
                         ifturn = 2
                         random_move = False
 
-                if move_x < SERVO_X_MIN + 20:
-                        move_x = SERVO_X_MIN + 20
+                if move_x < SERVO_X_MIN + 5:
+                        move_x = SERVO_X_MIN + 5
                         ifturn = 1
                         random_move = False
 

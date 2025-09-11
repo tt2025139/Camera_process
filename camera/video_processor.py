@@ -28,9 +28,9 @@ class CONFIG:
     # UPPER_COLOR_BOUND_1 = np.array([70, 140, 70])
     # LOWER_COLOR_BOUND_2 = None  
     # UPPER_COLOR_BOUND_2 = None  
-    LOWER_COLOR_BOUND_1 = np.array([0, 100, 20])
-    UPPER_COLOR_BOUND_1 = np.array([30, 255, 255])
-    LOWER_COLOR_BOUND_2 = np.array([150, 100, 20])  # 可选第二个范围
+    LOWER_COLOR_BOUND_1 = np.array([0, 100, 30])
+    UPPER_COLOR_BOUND_1 = np.array([20, 255, 255])
+    LOWER_COLOR_BOUND_2 = np.array([160, 100, 30])  # 可选第二个范围
     UPPER_COLOR_BOUND_2 = np.array([180, 255, 255])
 
     # LOWER_COLOR_BOUND_1 = np.array([90, 100, 50])
@@ -180,7 +180,7 @@ def run_video_processing(shared_state, lock):
                         # --- 使用宏定义的颜色范围进行物体检测 ---
                         if CONFIG.ADAPTIVE_V_CHANNEL:
                             # 1. 对 BOUND_1 进行HS初筛 (更清晰的写法)
-                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 100])
+                            lower_hs1 = np.array([CONFIG.LOWER_COLOR_BOUND_1[0], CONFIG.LOWER_COLOR_BOUND_1[1], 40])
                             upper_hs1 = np.array([CONFIG.UPPER_COLOR_BOUND_1[0], CONFIG.UPPER_COLOR_BOUND_1[1], 230])
                             hs_mask1 = cv2.inRange(hsv, lower_hs1, upper_hs1)
                             
@@ -188,7 +188,7 @@ def run_video_processing(shared_state, lock):
                             
                             # (如果存在) 对 BOUND_2 进行HS初筛并合并
                             if CONFIG.LOWER_COLOR_BOUND_2 is not None and CONFIG.UPPER_COLOR_BOUND_2 is not None:
-                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 100])
+                                lower_hs2 = np.array([CONFIG.LOWER_COLOR_BOUND_2[0], CONFIG.LOWER_COLOR_BOUND_2[1], 40])
                                 upper_hs2 = np.array([CONFIG.UPPER_COLOR_BOUND_2[0], CONFIG.UPPER_COLOR_BOUND_2[1], 230])
                                 hs_mask2 = cv2.inRange(hsv, lower_hs2, upper_hs2)
                                 combined_hs_mask = cv2.bitwise_or(hs_mask1, hs_mask2)
