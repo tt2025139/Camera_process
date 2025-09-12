@@ -74,22 +74,22 @@ def run_remote_control(shared_state, lock):
             if watching_move is not None:
                   # 检查 "上升" 信号
                   if watching_move[0] == 1:
-                        move_y += 10
+                        move_y += 5
                         shared_state['watching_up'] = 0
                   
                   # 检查 "下降" 信号
                   elif watching_move[1] == 1:
-                        move_y -= 10
+                        move_y -= 5
                         shared_state['watching_down'] = 0
                   
                   # 检查 "左转" 信号
                   elif watching_move[2] == 1:
-                        move_x += 30
+                        move_x += 10
                         shared_state['watching_left'] = 0
                   
                   # 检查 "右转" 信号
                   elif watching_move[3] == 1:
-                        move_x -= 30
+                        move_x -= 10
                         shared_state['watching_right'] = 0
 
                   
