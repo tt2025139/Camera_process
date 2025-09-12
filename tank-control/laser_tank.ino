@@ -5,6 +5,7 @@
 byte count = 0;             // 计数循环，小车左转要持续的循环次数
 
 uint8_t mov = 0;
+uint8_t rotate_state = 0;
 
 // 超声波相关参数
 unsigned long previousUltrasonicTime = 0;
@@ -63,7 +64,7 @@ void updateMotorControl() {
     count--;
   }
   else {
-    Forward_1(300);
+    Forward_1(500);
   }
 }
 
@@ -93,6 +94,8 @@ void setup() {
 
 
 void loop() {
+//  Forward_1(500);
+  
   
   loop_process_bluetooth(bluetooth, bluetoothReadState, i_read_buf, buffer, laserTimer);
    if (millis() < laserTimer) {
@@ -101,16 +104,37 @@ void loop() {
     digitalWrite(LASER_PIN, LOW);
   }
   mov =  moveornot();
+  rotate_state = getRotateState();
 
   if (mov == 1){
     updateUltrasonic();
     updateMotorControl();
   }
-  else{
-    Stop();
+  else if (rotate_state == 1 && mov == 0){
+    ClockWise(300); 
   }
-  
-
+  else if (rotate_state == 2 && mov == 0) {
+    AntiClockWise(300);   
+  }
+  else if (rotate_state == 3 && mov == 0) {
+    Backward(300);   
+  }
+  // 下述为遥控情形
+  else if (mov == 2) {
+    Forward_1(400);   
+  }
+  else if (mov == 3) {
+    Backward(400);   
+  }
+  else if (mov == 4) {
+    AntiClockWise(400);   
+  }
+  else if (mov == 5) {
+    ClockWise(400);  
+  }
+  else {
+  Stop();    
+  }
 
 
 

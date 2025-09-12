@@ -4,10 +4,14 @@
 #define DEBUG_MSG
 
 uint8_t  moving = 0;
+uint8_t  rotate = 0;
 uint8_t moveornot(){
     return moving;
 }
 
+uint8_t getRotateState(){
+    return rotate;
+}
 
 /**
  * @brief process the packet, and do some actions
@@ -29,6 +33,7 @@ void process_packet(Packet* packet, unsigned long& laserTimer) {
     laserTimer = millis() + LASER_LENGTH;
   }
   moving = packet->enable_move;
+  rotate = packet->rotate_state;
 }
 
 /**

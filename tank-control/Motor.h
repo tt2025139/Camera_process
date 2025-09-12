@@ -31,7 +31,7 @@ constexpr uint16_t MAX_SPEED = 1023U;
 
 
 // 其他参数定义
-#define Compesate 30         // 补偿因硬件连接引起的左右轮速度不一致
+#define Compesate 40         // 补偿因硬件连接引起的左右轮速度不一致
 
 // 函数定义
 byte Id2Order(byte id);
@@ -53,7 +53,7 @@ void Forward_1(word speed);
 void Forward_2(word speed);
 void ClockWise(word speed);
 void AntiClockWise(word speed);
-uint8_t moveornot(uint8_t moving);
+void Backward(word speed);
 void serialEnd();
 
 #endif

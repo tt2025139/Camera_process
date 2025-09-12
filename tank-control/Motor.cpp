@@ -142,10 +142,10 @@ void setAction(byte order) {
 
  // 该函数控制小车向前，电机转速最好不超过1000.
 void Forward(word speed) {                     // 后续可引入PID？
-  setMotorSpeed(SERVO_ID3, speed+1024+Compesate);
-  setMotorSpeed(SERVO_ID4, speed);
-  setMotorSpeed(SERVO_ID5, speed);
-  setMotorSpeed(SERVO_ID6, speed+1024+Compesate);
+  setMotorSpeed(SERVO_ID3, speed);
+  setMotorSpeed(SERVO_ID4, speed+1024);
+  setMotorSpeed(SERVO_ID5, speed+100);
+  setMotorSpeed(SERVO_ID6, speed+1024+100);
   setAction(1);
   setAction(2);
 }
@@ -153,7 +153,7 @@ void Forward(word speed) {                     // 后续可引入PID？
 
  // 3.4朝5走
 void Forward_1(word speed) {
-  setMotorSpeed(SERVO_ID3, speed);
+  setMotorSpeed(SERVO_ID3, speed+Compesate);
   setMotorSpeed(SERVO_ID4, speed+1024);
   setMotorSpeed(SERVO_ID5, 0);
   setMotorSpeed(SERVO_ID6, 0);
@@ -169,6 +169,19 @@ void Forward_2(word speed) {
   setAction(2);
 }
 
+
+void RotateAngle(word angle) {
+    
+}
+
+void Backward(word speed) {
+  setMotorSpeed(SERVO_ID3, speed+1024);
+  setMotorSpeed(SERVO_ID4, speed);
+  setMotorSpeed(SERVO_ID5, 0);
+  setMotorSpeed(SERVO_ID6, 0);
+  setAction(1);
+  setAction(2);
+}
 
 void ClockWise(word speed) {                    // 转弯时设计一个较慢的向前速度？
   setMotorSpeed(SERVO_ID3, speed);
